@@ -30,4 +30,7 @@ P__SYSCALL_DEFINEx(4, _signalfd4, int, ufd, sigset_t __user *, user_mask,
 P__SYSCALL_DEFINEx(6, _epoll_pwait, int, epfd, struct epoll_event __user *, events,
 		int, maxevents, int, timeout, const sigset_t __user *, sigmask,
 		size_t, sigsetsize);
+P__SYSCALL_DEFINEx(6, _epoll_pwait2, int, epfd, struct epoll_event __user *, events,
+		int, maxevents, const struct __kernel_timespec __user *, timeout,
+		const sigset_t __user *, sigmask, size_t, sigsetsize);
 #undef P__SYSCALL_DEFINEx

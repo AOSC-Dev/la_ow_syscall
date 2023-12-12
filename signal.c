@@ -158,7 +158,7 @@ __SYSCALL_DEFINEx(6, _epoll_pwait, int, epfd, struct epoll_event __user *, event
 		int, maxevents, int, timeout, const sigset_t __user *, sigmask,
 		size_t, sigsetsize)
 {
-	if (sigsetsize == sizeof(sigset_t)) {
+	if (sigmask == NULL || sigsetsize == sizeof(sigset_t)) {
                 return p_sys_epoll_pwait(epfd, events, maxevents, timeout, sigmask, sigsetsize);
 	} else if (sigsetsize == sizeof(_la_ow_sigset_t)) {
                 int rc = p_sys_epoll_pwait(epfd, events, maxevents, timeout, sigmask, sizeof(sigset_t));
@@ -169,6 +169,23 @@ __SYSCALL_DEFINEx(6, _epoll_pwait, int, epfd, struct epoll_event __user *, event
 	} else {
 		return -EINVAL;
 	}
+}
+
+__SYSCALL_DEFINEx(6, _epoll_pwait2, int, epfd, struct epoll_event __user *, events,
+		int, maxevents, const struct __kernel_timespec __user *, timeout,
+		const sigset_t __user *, sigmask, size_t, sigsetsize)
+{
+	if (sigmask == NULL || sigsetsize == sizeof(sigset_t)) {
+                return p_sys_epoll_pwait2(epfd, events, maxevents, timeout, sigmask, sigsetsize);
+        } else if (sigsetsize == sizeof(_la_ow_sigset_t)) {
+                int rc = p_sys_epoll_pwait2(epfd, events, maxevents, timeout, sigmask, sizeof(sigset_t));
+                if (rc < 0) {
+                        return rc;
+                }
+                return rc;
+        } else {
+                return -EINVAL;
+        }
 }
 
 __SYSCALL_DEFINEx(4, _signalfd4, int, ufd, sigset_t __user *, user_mask,

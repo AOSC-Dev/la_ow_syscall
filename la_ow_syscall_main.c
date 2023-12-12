@@ -48,6 +48,7 @@ static struct {
 	{__NR_pselect6, sys_pselect6},
 	{__NR_signalfd4, sys_signalfd4},
 	{__NR_epoll_pwait, sys_epoll_pwait},
+	{__NR_epoll_pwait2, sys_epoll_pwait2},
 };
 
 #define nr_syscalls_to_replace (sizeof(syscall_to_replace)/sizeof(syscall_to_replace[0]))
@@ -100,6 +101,7 @@ static struct {
        __rel(sys_pselect6),
        __rel(sys_signalfd4),
        __rel(sys_epoll_pwait),
+       __rel(sys_epoll_pwait2),
 };
 #define nr_rel_tab (sizeof(relocation_table)/sizeof(relocation_table[0]))
 
