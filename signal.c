@@ -33,9 +33,9 @@ __SYSCALL_DEFINEx(4, _rt_sigprocmask, int, how, sigset_t __user *, nset,
 			return rc;
 		}
 		if (oset) {
-			rc = clear_user_sigset_extension(oset);
-			if (rc < 0){
-				return rc;
+			int rc2 = clear_user_sigset_extension(oset);
+			if (rc2 < 0){
+				return rc2;
 			}
 		}
 		return 0;
@@ -53,9 +53,9 @@ __SYSCALL_DEFINEx(2, _rt_sigpending, sigset_t __user *, uset, size_t, sigsetsize
 		if (rc < 0) {
 			return rc;
 		}
-		rc = clear_user_sigset_extension(uset);
-		if (rc < 0) {
-			return rc;
+		int rc2 = clear_user_sigset_extension(uset);
+		if (rc2 < 0) {
+			return rc2;
 		}
 		return 0;
 	} else {
@@ -75,7 +75,7 @@ __SYSCALL_DEFINEx(4, _rt_sigtimedwait, const sigset_t __user *, uthese,
 		if (rc < 0) {
 			return rc;
 		}
-		return 0;
+		return rc;
 	} else {
 		return -EINVAL;
 	}
@@ -94,12 +94,12 @@ __SYSCALL_DEFINEx(4, _rt_sigaction, int, sig,
                         return rc;
                 }
 		if (oact) {
-			rc = clear_user_sigset_extension(&oact->sa_mask);
-			if (rc < 0) {
-				return rc;
+			int rc2 = clear_user_sigset_extension(&oact->sa_mask);
+			if (rc2 < 0) {
+				return rc2;
 			}
 		}
-		return 0;
+		return rc;
 	} else {
                 return -EINVAL;
         }
@@ -114,7 +114,7 @@ __SYSCALL_DEFINEx(2, _rt_sigsuspend, sigset_t __user *, unewset, size_t, sigsets
 		if (rc < 0) {
                         return rc;
                 }
-		return 0;
+		return rc;
 	} else {
 		return -EINVAL;
 	}
@@ -127,16 +127,19 @@ __SYSCALL_DEFINEx(6, _pselect6, int, n, fd_set __user *, inp, fd_set __user *, o
 	struct sigset_argpack {
 		sigset_t __user *p;
 		size_t size;
-	} x = {NULL, 0}, *siginfo = (struct sigset_argpack __user *)sig;
+	} x = {NULL, 0};
+        struct sigset_argpack __user *siginfo = (struct sigset_argpack __user *)sig;
 
-	int rc = get_user(x.size, &siginfo->size);
-	if (rc < 0) {
-		return -EFAULT;
+	if (siginfo) {
+	        int rc = get_user(x.size, &siginfo->size);
+	        if (rc < 0) {
+		        return -EFAULT;
+	        }
 	}
-	if (x.size == sizeof(sigset_t)){
+	if (siginfo == NULL || x.size == sizeof(sigset_t)){
 		return p_sys_pselect6(n, inp, outp, exp, tsp, sig);
 	} else if (x.size == sizeof(_la_ow_sigset_t)) {
-		rc = put_user(sizeof(sigset_t), &siginfo->size);
+		int rc = put_user(sizeof(sigset_t), &siginfo->size);
 		if (rc < 0) {
 			return -EFAULT;
 		}
@@ -162,7 +165,7 @@ __SYSCALL_DEFINEx(6, _epoll_pwait, int, epfd, struct epoll_event __user *, event
 		if (rc < 0) {
                         return rc;
                 }
-		return 0;
+		return rc;
 	} else {
 		return -EINVAL;
 	}
@@ -178,7 +181,7 @@ __SYSCALL_DEFINEx(4, _signalfd4, int, ufd, sigset_t __user *, user_mask,
 		if (rc < 0) {
                         return rc;
                 }
-                return 0;
+                return rc;
         } else {
                 return -EINVAL;
         }
