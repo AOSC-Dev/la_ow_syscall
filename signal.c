@@ -157,6 +157,8 @@ __SYSCALL_DEFINEx(6, _pselect6, int, n, fd_set __user *, inp, fd_set __user *,
 	}
 }
 
+#ifdef CONFIG_EPOLL
+
 __SYSCALL_DEFINEx(6, _epoll_pwait, int, epfd, struct epoll_event __user *,
 		  events, int, maxevents, int, timeout, const sigset_t __user *,
 		  sigmask, size_t, sigsetsize)
@@ -196,6 +198,10 @@ __SYSCALL_DEFINEx(6, _epoll_pwait2, int, epfd, struct epoll_event __user *,
 	}
 }
 
+#endif
+
+#ifdef CONFIG_SIGNALFD
+
 __SYSCALL_DEFINEx(4, _signalfd4, int, ufd, sigset_t __user *, user_mask, size_t,
 		  sizemask, int, flags)
 {
@@ -212,3 +218,5 @@ __SYSCALL_DEFINEx(4, _signalfd4, int, ufd, sigset_t __user *, user_mask, size_t,
 		return -EINVAL;
 	}
 }
+
+#endif

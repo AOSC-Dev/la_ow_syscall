@@ -51,9 +51,13 @@ static struct {
 	{ __NR_rt_sigaction, sys_rt_sigaction },
 	{ __NR_rt_sigsuspend, sys_rt_sigsuspend },
 	{ __NR_pselect6, sys_pselect6 },
+#ifdef CONFIG_SIGNALFD
 	{ __NR_signalfd4, sys_signalfd4 },
+#endif
+#ifdef CONFIG_EPOLL
 	{ __NR_epoll_pwait, sys_epoll_pwait },
 	{ __NR_epoll_pwait2, sys_epoll_pwait2 },
+#endif
 };
 
 #define nr_syscalls_to_replace \
@@ -161,8 +165,13 @@ static struct {
 	__rel(sys_clone),	  __rel(sys_rt_sigprocmask),
 	__rel(sys_rt_sigpending), __rel(sys_rt_sigtimedwait),
 	__rel(sys_rt_sigaction),  __rel(sys_rt_sigsuspend),
-	__rel(sys_pselect6),	  __rel(sys_signalfd4),
+	__rel(sys_pselect6),
+#ifdef CONFIG_SIGNALFD
+	__rel(sys_signalfd4),
+#endif
+#ifdef CONFIG_EPOLL
 	__rel(sys_epoll_pwait),	  __rel(sys_epoll_pwait2),
+#endif
 };
 #define nr_rel_tab (sizeof(relocation_table) / sizeof(relocation_table[0]))
 
