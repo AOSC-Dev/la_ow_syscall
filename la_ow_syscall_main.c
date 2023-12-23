@@ -1,5 +1,3 @@
-#include "linux/kern_levels.h"
-#include "linux/printk.h"
 #include <linux/module.h> /* Needed by all modules */
 #include <linux/kernel.h> /* Needed for KERN_INFO */
 #include <linux/init.h> /* Needed for the macros */
@@ -133,11 +131,11 @@ static int __init find_kallsyms_lookup_name(void)
 	if (strncmp(fn_name, "kallsyms_lookup_name+0x0",
 		    strlen("kallsyms_lookup_name+0x0")) == 0) {
 		pr_debug("got kallsyms_lookup_name = %lx\n",
-		       kallsyms_lookup_name_addr);
+			 kallsyms_lookup_name_addr);
 		return 0;
 	} else {
-		pr_debug("got %s at %lx, not kallsyms_lookup_name\n",
-		       fn_name, kallsyms_lookup_name_addr);
+		pr_debug("got %s at %lx, not kallsyms_lookup_name\n", fn_name,
+			 kallsyms_lookup_name_addr);
 		return -EINVAL;
 	}
 }
@@ -172,19 +170,21 @@ static struct {
 #include <linux/reboot.h>
 static int __init find_sys_call_table(void)
 {
+	unsigned long (*p_kallsyms_lookup_name)(const char *name) =
+		(void *)kallsyms_lookup_name_addr;
 	unsigned long *sys_table;
 
-	for (sys_table = (void *)&jiffies;
-	     (void *)sys_table < (void *)&reboot_mode; sys_table++) {
-		if (sys_table[__NR_setxattr] == (unsigned long)p_sys_setxattr &&
-		    sys_table[__NR_close] == (unsigned long)p_sys_close &&
-		    sys_table[__NR_clone] == (unsigned long)p_sys_clone) {
-			p_sys_call_table = (void **)sys_table;
-			pr_debug("found sys_call_table=%px\n",
-				 p_sys_call_table);
-			return 0;
-		}
+	if (kallsyms_lookup_name_addr == 0) {
+		return -ENOSYS;
 	}
+
+	if ((sys_table = (unsigned long *)p_kallsyms_lookup_name(
+		     "sys_call_table"))) {
+		p_sys_call_table = (void **)sys_table;
+		pr_debug("found sys_call_table=%px\n", p_sys_call_table);
+		return 0;
+	}
+
 	return -ENOSYS;
 }
 
@@ -205,8 +205,8 @@ static int __init oldsyscall_start(void)
 				relocation_table[i].func_name);
 			return -EINVAL;
 		}
-		pr_debug("found symbol %s at %px\n", relocation_table[i].func_name,
-			 (void *)p);
+		pr_debug("found symbol %s at %px\n",
+			 relocation_table[i].func_name, (void *)p);
 		*relocation_table[i].stor = (void *)p;
 	}
 	rc = find_sys_call_table();
