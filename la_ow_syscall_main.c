@@ -1,3 +1,5 @@
+#include "linux/kern_levels.h"
+#include "linux/printk.h"
 #include <linux/module.h> /* Needed by all modules */
 #include <linux/kernel.h> /* Needed for KERN_INFO */
 #include <linux/init.h> /* Needed for the macros */
@@ -10,7 +12,7 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Miao Wang");
 
 ///< The description -- see modinfo
-MODULE_DESCRIPTION("A simple moudle!");
+MODULE_DESCRIPTION("LoongArch old-world syscall compatibility module");
 
 ///< The version of the module
 MODULE_VERSION("0.0.1");
@@ -99,7 +101,7 @@ static int do_register_kprobe(struct kprobe *kp, char *symbol_name,
 		return ret;
 	}
 
-	pr_info("Planted kprobe for symbol %s at %p\n", symbol_name, kp->addr);
+	pr_debug("planted kprobe for symbol %s at %p\n", symbol_name, kp->addr);
 
 	return ret;
 }
@@ -130,11 +132,11 @@ static int __init find_kallsyms_lookup_name(void)
 	sprint_symbol(fn_name, kallsyms_lookup_name_addr);
 	if (strncmp(fn_name, "kallsyms_lookup_name+0x0",
 		    strlen("kallsyms_lookup_name+0x0")) == 0) {
-		printk(KERN_INFO "got kallsyms_lookup_name = %lx\n",
+		pr_debug("got kallsyms_lookup_name = %lx\n",
 		       kallsyms_lookup_name_addr);
 		return 0;
 	} else {
-		printk(KERN_INFO "got %s at %lx, not kallsyms_lookup_name\n",
+		pr_debug("got %s at %lx, not kallsyms_lookup_name\n",
 		       fn_name, kallsyms_lookup_name_addr);
 		return -EINVAL;
 	}
@@ -178,8 +180,8 @@ static int __init find_sys_call_table(void)
 		    sys_table[__NR_close] == (unsigned long)p_sys_close &&
 		    sys_table[__NR_clone] == (unsigned long)p_sys_clone) {
 			p_sys_call_table = (void **)sys_table;
-			printk(KERN_INFO "found sys_call_table=%px\n",
-			       p_sys_call_table);
+			pr_debug("found sys_call_table=%px\n",
+				 p_sys_call_table);
 			return 0;
 		}
 	}
@@ -194,18 +196,17 @@ static int __init oldsyscall_start(void)
 		return rc;
 	}
 	p_kallsyms_lookup_name = (void *)kallsyms_lookup_name_addr;
-	//printk(KERN_INFO "kallsyms_lookup_name(sys_call_table)=%lx\n", p_kallsyms_lookup_name("sys_call_table"));
-	//return -EINVAL;
+
 	for (int i = 0; i < nr_rel_tab; i++) {
 		unsigned long p =
 			p_kallsyms_lookup_name(relocation_table[i].func_name);
 		if (p == 0) {
-			printk(KERN_INFO "Cannot find %s\n",
-			       relocation_table[i].func_name);
+			pr_warn("cannot find symbol %s\n",
+				relocation_table[i].func_name);
 			return -EINVAL;
 		}
-		printk(KERN_INFO "found %s=%px\n",
-		       relocation_table[i].func_name, (void *)p);
+		pr_debug("found symbol %s at %px\n", relocation_table[i].func_name,
+			 (void *)p);
 		*relocation_table[i].stor = (void *)p;
 	}
 	rc = find_sys_call_table();
@@ -220,10 +221,10 @@ static int __init oldsyscall_start(void)
 			sys_call_table_name[syscall_to_replace[i].syscall_num];
 		unsigned long symbol_addr = p_kallsyms_lookup_name(symbol_name);
 		if (symbol_addr) {
-			printk(KERN_INFO "Found %s at %px\n", symbol_name,
-			       (void *)symbol_addr);
+			pr_debug("found %s at %px\n", symbol_name,
+				 (void *)symbol_addr);
 		} else {
-			printk(KERN_INFO "Cannot find %s\n", symbol_name);
+			pr_warn("cannot find symbol %s\n", symbol_name);
 			return -EINVAL;
 		}
 		syscall_to_replace[i].symbol_addr = (void *)symbol_addr;
@@ -235,25 +236,25 @@ static int __init oldsyscall_start(void)
 		}
 	}
 	for (int i = 0; i < nr_syscalls_to_replace; i++) {
-		printk(KERN_INFO
-		       "Will replace syscall_%ld with %px, orig %px\n",
-		       syscall_to_replace[i].syscall_num,
-		       syscall_to_replace[i].symbol_addr,
-		       p_sys_call_table[syscall_to_replace[i].syscall_num]);
+		pr_debug("will replace syscall_%ld with %px, orig %px\n",
+			 syscall_to_replace[i].syscall_num,
+			 syscall_to_replace[i].symbol_addr,
+			 p_sys_call_table[syscall_to_replace[i].syscall_num]);
 		syscall_to_replace[i].orig =
 			p_sys_call_table[syscall_to_replace[i].syscall_num];
 		p_sys_call_table[syscall_to_replace[i].syscall_num] =
 			syscall_to_replace[i].symbol_addr;
 	}
+	pr_info("la_ow_syscall module successfully initialized\n");
 	return 0;
 }
 
 static void __exit oldsyscall_end(void)
 {
 	for (int i = 0; i < nr_syscalls_to_replace; i++) {
-		printk(KERN_INFO "Will restore syscall_%ld to %px\n",
-		       syscall_to_replace[i].syscall_num,
-		       syscall_to_replace[i].orig);
+		pr_debug("will restore syscall_%ld to %px\n",
+			 syscall_to_replace[i].syscall_num,
+			 syscall_to_replace[i].orig);
 		p_sys_call_table[syscall_to_replace[i].syscall_num] =
 			syscall_to_replace[i].orig;
 	}
