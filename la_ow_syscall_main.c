@@ -1,6 +1,7 @@
 #include <linux/module.h>     /* Needed by all modules */ 
 #include <linux/kernel.h>     /* Needed for KERN_INFO */ 
 #include <linux/init.h>       /* Needed for the macros */ 
+#include <linux/kprobes.h>    /* Needed for kprobe calls */
   
 ///< The license type -- this affects runtime behavior 
 MODULE_LICENSE("GPL"); 
@@ -58,10 +59,59 @@ static unsigned int allow_mod_unreg = 0;
 
 #include<asm-generic/sections.h>
 
+// Taken from https://github.com/zizzu0/LinuxKernelModules/blob/main/FindKallsymsLookupName.c
+#define KPROBE_PRE_HANDLER(fname)                                              \
+  static int __kprobes fname(struct kprobe *p, struct pt_regs *regs)
+
+static struct kprobe kp0, kp1;
+
+KPROBE_PRE_HANDLER(handler_pre0) {
+  kallsyms_lookup_name_addr = regs->csr_era;
+
+  return 0;
+}
+
+KPROBE_PRE_HANDLER(handler_pre1) { return 0; }
+
+#undef KPROBE_PRE_HANDLER
+
+static int do_register_kprobe(struct kprobe *kp, char *symbol_name,
+                              void *handler) {
+  int ret = 0;
+
+  kp->symbol_name = symbol_name;
+  kp->pre_handler = handler;
+
+  ret = register_kprobe(kp);
+  if (ret < 0) {
+    pr_err("register_probe() for symbol %s failed, returned %d\n", symbol_name, ret);
+    return ret;
+  }
+
+  pr_info("Planted kprobe for symbol %s at %p\n", symbol_name, kp->addr);
+
+  return ret;
+}
+
 static int __init find_kallsyms_lookup_name(void){
 	char fn_name[KSYM_SYMBOL_LEN];
 
-	if (kallsyms_lookup_name_addr == 0){
+	int ret = 0;
+
+	ret = do_register_kprobe(&kp0, "kallsyms_lookup_name", handler_pre0);
+	if (ret < 0)
+		return ret;
+
+	ret = do_register_kprobe(&kp1, "kallsyms_lookup_name", handler_pre1);
+	if (ret < 0) {
+		unregister_kprobe(&kp0);
+		return ret;
+	}
+
+	unregister_kprobe(&kp0);
+	unregister_kprobe(&kp1);
+
+	if (kallsyms_lookup_name_addr == 0 || kallsyms_lookup_name_addr == (unsigned long)-1) {
 		return -EINVAL;
 	}
 	sprint_symbol(fn_name, kallsyms_lookup_name_addr);
@@ -185,7 +235,5 @@ static void __exit oldsyscall_end(void)
   
 module_init(oldsyscall_start); 
 module_exit(oldsyscall_end); 
-module_param(kallsyms_lookup_name_addr, ulong, 0000);
 module_param(allow_mod_unreg, uint, 0000);
-MODULE_PARM_DESC(kallsyms_lookup_name_addr, "Address for kallsyms_lookup_name");
 MODULE_PARM_DESC(allow_mod_unreg, "Allow this module to be unload (Danger! Debug use only)");
