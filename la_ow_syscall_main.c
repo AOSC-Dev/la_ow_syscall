@@ -32,6 +32,10 @@ const char *sys_call_table_name[__NR_syscalls] = {
 #include <asm/unistd.h>
 };
 
+#ifndef __loongarch64
+#error This Linux kernel module is only supported on LoongArch
+#endif
+
 static struct {
 	long syscall_num;
 	void *symbol_addr;
