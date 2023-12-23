@@ -15,7 +15,7 @@ MODULE_AUTHOR("Miao Wang");
 MODULE_DESCRIPTION("LoongArch old-world syscall compatibility module");
 
 ///< The version of the module
-MODULE_VERSION("0.0.1");
+MODULE_VERSION("0.1.0");
 
 #include <linux/kallsyms.h>
 #include <linux/syscalls.h>
