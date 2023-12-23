@@ -1,0 +1,7 @@
+PACKAGE_NAME="la_ow_syscall"
+PACKAGE_VERSION="VERSION"
+MAKE="KDIR=/lib/modules/${kernelver}/build make"
+CLEAN="make clean"
+BUILT_MODULE_NAME[0]="la_ow_syscall"
+AUTOINSTALL="yes"
+DEST_MODULE_LOCATION[0]="/extra"
