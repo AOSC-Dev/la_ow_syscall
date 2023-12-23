@@ -185,6 +185,21 @@ static int __init find_sys_call_table(void)
 		return 0;
 	}
 
+	pr_info("failed to find sys_call_table using kallsyms_lookup_name()\n");
+	pr_info("trying to find sys_call_table using memory scanning\n");
+
+	for (sys_table = (void *)&jiffies;
+	     (void *)sys_table < (void *)&reboot_mode; sys_table++) {
+		if (sys_table[__NR_setxattr] == (unsigned long)p_sys_setxattr &&
+		    sys_table[__NR_close] == (unsigned long)p_sys_close &&
+		    sys_table[__NR_clone] == (unsigned long)p_sys_clone) {
+			p_sys_call_table = (void **)sys_table;
+			pr_debug("found sys_call_table=%px\n",
+				 p_sys_call_table);
+			return 0;
+		}
+	}
+
 	return -ENOSYS;
 }
 
