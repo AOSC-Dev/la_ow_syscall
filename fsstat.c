@@ -7,7 +7,6 @@
 
 #define INIT_STRUCT_STAT_PADDING(st) memset(&st, 0, sizeof(st))
 
-
 struct __old_kernel_stat {
 	unsigned short st_dev;
 	unsigned short st_ino;
@@ -16,10 +15,10 @@ struct __old_kernel_stat {
 	unsigned short st_uid;
 	unsigned short st_gid;
 	unsigned short st_rdev;
-	unsigned int  st_size;
-	unsigned int  st_atime;
-	unsigned int  st_mtime;
-	unsigned int  st_ctime;
+	unsigned int st_size;
+	unsigned int st_atime;
+	unsigned int st_mtime;
+	unsigned int st_ctime;
 };
 
 static int cp_new_stat(struct kstat *stat, struct stat __user *statbuf)
@@ -58,7 +57,7 @@ static int cp_new_stat(struct kstat *stat, struct stat __user *statbuf)
 #endif
 	tmp.st_blocks = stat->blocks;
 	tmp.st_blksize = stat->blksize;
-	return copy_to_user(statbuf,&tmp,sizeof(tmp)) ? -EFAULT : 0;
+	return copy_to_user(statbuf, &tmp, sizeof(tmp)) ? -EFAULT : 0;
 }
 
 __SYSCALL_DEFINEx(2, _newfstat, unsigned int, fd, struct stat __user *, statbuf)
@@ -73,7 +72,7 @@ __SYSCALL_DEFINEx(2, _newfstat, unsigned int, fd, struct stat __user *, statbuf)
 }
 
 __SYSCALL_DEFINEx(4, _newfstatat, int, dfd, const char __user *, filename,
-		struct stat __user *, statbuf, int, flag)
+		  struct stat __user *, statbuf, int, flag)
 {
 	struct kstat stat;
 	int error;
