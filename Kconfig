@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: GPL-2.0
+
+menu "LoongArch Oldworld Syscall Compatiable layer"
+
+config LOONGARCH_OW_SYSCALL
+	tristate "loongarch oldworld syscall"
+	depends on m
+	help
+	  LoongArch Oldworld Syscall Compatiable layer
+endmenu

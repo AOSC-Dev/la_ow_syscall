@@ -157,6 +157,23 @@ __SYSCALL_DEFINEx(6, _pselect6, int, n, fd_set __user *, inp, fd_set __user *,
 	}
 }
 
+__SYSCALL_DEFINEx(5, _ppoll, struct pollfd __user *, ufds, unsigned int, nfds,
+		struct __kernel_timespec __user *, tsp, const sigset_t __user *, sigmask,
+		size_t, sigsetsize)
+{
+	if (sigmask == NULL || sigsetsize == sizeof(sigset_t)) {
+		return p_sys_ppoll(ufds, nfds, tsp, sigmask, sigsetsize);
+	} else if (sigsetsize == sizeof(_la_ow_sigset_t)) {
+		int rc = p_sys_ppoll(ufds, nfds, tsp, sigmask, sizeof(sigset_t));
+		if (rc < 0) {
+			return rc;
+		}
+		return rc;
+	} else {
+		return -EINVAL;
+	}
+}
+
 #ifdef CONFIG_EPOLL
 
 __SYSCALL_DEFINEx(6, _epoll_pwait, int, epfd, struct epoll_event __user *,

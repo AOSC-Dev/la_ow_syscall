@@ -55,6 +55,7 @@ static struct {
 	{ __NR_rt_sigaction, sys_rt_sigaction },
 	{ __NR_rt_sigsuspend, sys_rt_sigsuspend },
 	{ __NR_pselect6, sys_pselect6 },
+	{ __NR_ppoll, sys_ppoll },
 #ifdef CONFIG_SIGNALFD
 	{ __NR_signalfd4, sys_signalfd4 },
 #endif
@@ -178,7 +179,7 @@ static struct {
 	__rel(sys_clone),	  __rel(sys_rt_sigprocmask),
 	__rel(sys_rt_sigpending), __rel(sys_rt_sigtimedwait),
 	__rel(sys_rt_sigaction),  __rel(sys_rt_sigsuspend),
-	__rel(sys_pselect6),
+	__rel(sys_pselect6),	  __rel(sys_ppoll),
 #ifdef CONFIG_SIGNALFD
 	__rel(sys_signalfd4),
 #endif

@@ -25,6 +25,9 @@ P__SYSCALL_DEFINEx(2, _rt_sigsuspend, sigset_t __user *, unewset, size_t,
 P__SYSCALL_DEFINEx(6, _pselect6, int, n, fd_set __user *, inp, fd_set __user *,
 		   outp, fd_set __user *, exp,
 		   struct __kernel_timespec __user *, tsp, void __user *, sig);
+P__SYSCALL_DEFINEx(5, _ppoll, struct pollfd __user *, ufds, unsigned int, nfds,
+		struct __kernel_timespec __user *, tsp, const sigset_t __user *, sigmask,
+		size_t, sigsetsize);
 #ifdef CONFIG_SIGNALFD
 P__SYSCALL_DEFINEx(4, _signalfd4, int, ufd, sigset_t __user *, user_mask,
 		   size_t, sizemask, int, flags);
