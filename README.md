@@ -51,8 +51,13 @@ depmod
 
 ### DKMS dynamic module
 
-Refer to dkms(8) for details. We have supplied a sample `dkms.conf.in` in the
-source tree.
+Generate a `dkms.conf`:
+
+```
+make dkms.conf
+```
+
+For installation and version management, refer to dkms(8) for details.
 
 ### Version-specific module
 
