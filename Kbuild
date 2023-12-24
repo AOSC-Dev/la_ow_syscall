@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 #
-# Makefile for LoongArch Oldworld syscall compatible layer.
+# Makefile for LoongArch old-world syscall compatible layer.
 #
 
 ifdef KBUILD_EXTMOD
