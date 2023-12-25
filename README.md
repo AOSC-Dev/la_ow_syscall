@@ -34,17 +34,18 @@ After building the kernel with `make`, run the following command to build the
 kernel module:
 
 ```
-# $PWD is the kernel source root.
+# $PWD is containing built objects
+# /path/to/source_dir is containing Linux source code
 make \
-    -C ${PWD} \
+    -C /path/to/source_dir \
     ARCH=loongarch \
-    O=(pwd) \
+    O="$PWD" \
     arch/loongarch/ow_syscall/la_ow_syscall.ko \
     CONFIG_LOONGARCH_OW_SYSCALL=m
 ```
 
 Upon completion, copy the kernel module in place
-(`/usr/lib/modules/.../arch/loongarch/ow_syscall/la_ow_syscall.ko`) and
+(`/lib/modules/.../arch/loongarch/ow_syscall/la_ow_syscall.ko`) and
 re-generate modules.dep and map files:
 
 ```
