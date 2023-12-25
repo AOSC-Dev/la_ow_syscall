@@ -122,10 +122,8 @@ static int do_register_kprobe(struct kprobe *kp, char *symbol_name,
 	return ret;
 }
 
-static int __init find_kallsyms_lookup_name(void)
+static int __init kprobe_kallsyms_lookup_name(void)
 {
-	char fn_name[KSYM_SYMBOL_LEN];
-
 	int ret = 0;
 
 	ret = do_register_kprobe(&kp0, "kallsyms_lookup_name", handler_pre0);
@@ -141,9 +139,26 @@ static int __init find_kallsyms_lookup_name(void)
 	unregister_kprobe(&kp0);
 	unregister_kprobe(&kp1);
 
+	return ret;
+}
+
+
+static int __init find_kallsyms_lookup_name(void)
+{
+	char fn_name[KSYM_SYMBOL_LEN];
+
+	int ret = 0;
+
 	if (kallsyms_lookup_name_addr == 0 ||
 	    kallsyms_lookup_name_addr == (unsigned long)-1) {
-		return -EINVAL;
+		ret = kprobe_kallsyms_lookup_name();
+		if ( ret < 0 ) {
+			return ret;
+		}
+		if (kallsyms_lookup_name_addr == 0 ||
+		    kallsyms_lookup_name_addr == (unsigned long)-1) {
+			return -EINVAL;
+		}
 	}
 	sprint_symbol(fn_name, kallsyms_lookup_name_addr);
 	if (strncmp(fn_name, "kallsyms_lookup_name+0x0",
@@ -313,5 +328,5 @@ MODULE_PARM_DESC(allow_mod_unreg,
 		 "Allow this module to be unload (Danger! Debug use only)");
 #ifndef HAVE_KSYM_ADDR
 module_param(kallsyms_lookup_name_addr, ulong, 0000);
-MODULE_PARM_DESC(kallsyms_lookup_name_addr, "Address for kallsyms_lookup_name");
+MODULE_PARM_DESC(kallsyms_lookup_name_addr, "Address for kallsyms_lookup_name, provide this when unable to find using kprobe");
 #endif
