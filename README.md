@@ -11,6 +11,8 @@ Requirements
 Linux Kernel >= 6.1.0 for `loongarch64` with the following option(s) set:
 
 - `CONFIG_KALLSYMS=y` (for reading kernel symbol addresses).
+- `CONFIG_KPROBES=y` (for probing kernel symbol addresses using kernels where
+  base address randomisation - `CONFIG_RANDOMIZE_BASE` - is enabled).
 
 Installation
 ----
