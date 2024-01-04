@@ -7,6 +7,9 @@
 #define _LA_OW_NSIG 128
 #define _LA_OW_NSIG_WORDS (_LA_OW_NSIG / _NSIG_BPW)
 
+#define CUR_DEBUG SIGNAL
+#include "debug_flags.h"
+
 typedef struct {
 	unsigned long sig[_LA_OW_NSIG_WORDS];
 } _la_ow_sigset_t;
@@ -30,6 +33,7 @@ __SYSCALL_DEFINEx(4, _rt_sigprocmask, int, how, sigset_t __user *, nset,
 	} else if (sigsetsize == sizeof(_la_ow_sigset_t)) {
 		int rc =
 			p_sys_rt_sigprocmask(how, nset, oset, sizeof(sigset_t));
+		DEBUG_POINT;
 		if (rc < 0) {
 			return rc;
 		}
@@ -52,6 +56,7 @@ __SYSCALL_DEFINEx(2, _rt_sigpending, sigset_t __user *, uset, size_t,
 		return p_sys_rt_sigpending(uset, sigsetsize);
 	} else if (sigsetsize == sizeof(_la_ow_sigset_t)) {
 		int rc = p_sys_rt_sigpending(uset, sizeof(sigset_t));
+		DEBUG_POINT;
 		if (rc < 0) {
 			return rc;
 		}
@@ -75,6 +80,7 @@ __SYSCALL_DEFINEx(4, _rt_sigtimedwait, const sigset_t __user *, uthese,
 	} else if (sigsetsize == sizeof(_la_ow_sigset_t)) {
 		int rc = p_sys_rt_sigtimedwait(uthese, uinfo, uts,
 					       sizeof(sigset_t));
+		DEBUG_POINT;
 		if (rc < 0) {
 			return rc;
 		}
@@ -91,6 +97,7 @@ __SYSCALL_DEFINEx(4, _rt_sigaction, int, sig, const struct sigaction __user *,
 		return p_sys_rt_sigaction(sig, act, oact, sigsetsize);
 	} else if (sigsetsize == sizeof(_la_ow_sigset_t)) {
 		int rc = p_sys_rt_sigaction(sig, act, oact, sizeof(sigset_t));
+		DEBUG_POINT;
 		if (rc < 0) {
 			return rc;
 		}
@@ -112,6 +119,7 @@ __SYSCALL_DEFINEx(2, _rt_sigsuspend, sigset_t __user *, unewset, size_t,
 	if (sigsetsize == sizeof(sigset_t)) {
 		return p_sys_rt_sigsuspend(unewset, sigsetsize);
 	} else if (sigsetsize == sizeof(_la_ow_sigset_t)) {
+		DEBUG_POINT;
 		int rc = p_sys_rt_sigsuspend(unewset, sizeof(sigset_t));
 		if (rc < 0) {
 			return rc;
@@ -142,6 +150,7 @@ __SYSCALL_DEFINEx(6, _pselect6, int, n, fd_set __user *, inp, fd_set __user *,
 	if (siginfo == NULL || x.size == sizeof(sigset_t)) {
 		return p_sys_pselect6(n, inp, outp, exp, tsp, sig);
 	} else if (x.size == sizeof(_la_ow_sigset_t)) {
+		DEBUG_POINT;
 		int rc = put_user(sizeof(sigset_t), &siginfo->size);
 		if (rc < 0) {
 			return -EFAULT;
@@ -164,6 +173,7 @@ __SYSCALL_DEFINEx(5, _ppoll, struct pollfd __user *, ufds, unsigned int, nfds,
 	if (sigmask == NULL || sigsetsize == sizeof(sigset_t)) {
 		return p_sys_ppoll(ufds, nfds, tsp, sigmask, sigsetsize);
 	} else if (sigsetsize == sizeof(_la_ow_sigset_t)) {
+		DEBUG_POINT;
 		int rc = p_sys_ppoll(ufds, nfds, tsp, sigmask, sizeof(sigset_t));
 		if (rc < 0) {
 			return rc;
@@ -186,6 +196,7 @@ __SYSCALL_DEFINEx(6, _epoll_pwait, int, epfd, struct epoll_event __user *,
 	} else if (sigsetsize == sizeof(_la_ow_sigset_t)) {
 		int rc = p_sys_epoll_pwait(epfd, events, maxevents, timeout,
 					   sigmask, sizeof(sigset_t));
+		DEBUG_POINT;
 		if (rc < 0) {
 			return rc;
 		}
@@ -206,6 +217,7 @@ __SYSCALL_DEFINEx(6, _epoll_pwait2, int, epfd, struct epoll_event __user *,
 	} else if (sigsetsize == sizeof(_la_ow_sigset_t)) {
 		int rc = p_sys_epoll_pwait2(epfd, events, maxevents, timeout,
 					    sigmask, sizeof(sigset_t));
+		DEBUG_POINT;
 		if (rc < 0) {
 			return rc;
 		}
@@ -227,6 +239,7 @@ __SYSCALL_DEFINEx(4, _signalfd4, int, ufd, sigset_t __user *, user_mask, size_t,
 	} else if (sizemask == sizeof(_la_ow_sigset_t)) {
 		int rc = p_sys_signalfd4(ufd, user_mask, sizeof(sigset_t),
 					 flags);
+		DEBUG_POINT;
 		if (rc < 0) {
 			return rc;
 		}

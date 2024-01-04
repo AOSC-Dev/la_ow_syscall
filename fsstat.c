@@ -5,6 +5,9 @@
 #include <linux/mm.h>
 #include "fsstat.h"
 
+#define CUR_DEBUG FSTAT 
+#include "debug_flags.h"
+
 #define INIT_STRUCT_STAT_PADDING(st) memset(&st, 0, sizeof(st))
 
 struct __old_kernel_stat {
@@ -65,6 +68,8 @@ __SYSCALL_DEFINEx(2, _newfstat, unsigned int, fd, struct stat __user *, statbuf)
 	struct kstat stat;
 	int error = p_vfs_fstat(fd, &stat);
 
+	DEBUG_POINT;
+
 	if (!error)
 		error = cp_new_stat(&stat, statbuf);
 
@@ -76,6 +81,8 @@ __SYSCALL_DEFINEx(4, _newfstatat, int, dfd, const char __user *, filename,
 {
 	struct kstat stat;
 	int error;
+	
+	DEBUG_POINT;
 
 	error = p_vfs_fstatat(dfd, filename, &stat, flag);
 	if (error)

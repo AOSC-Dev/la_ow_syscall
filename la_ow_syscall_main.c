@@ -77,6 +77,9 @@ LAOWSYS_KALLSYMS_LOOKUP_NAME_ADDR
 ;
 static unsigned int allow_mod_unreg = 0;
 
+#include "debug_flags.h"
+unsigned int debug_print = 0;
+
 #include <asm-generic/sections.h>
 
 #ifdef HAVE_KSYM_ADDR
@@ -330,3 +333,5 @@ MODULE_PARM_DESC(allow_mod_unreg,
 module_param(kallsyms_lookup_name_addr, ulong, 0000);
 MODULE_PARM_DESC(kallsyms_lookup_name_addr, "Address for kallsyms_lookup_name, provide this when unable to find using kprobe");
 #endif
+module_param(debug_print, uint, 0660);
+MODULE_PARM_DESC(debug_print, "print caller pid when oldworld syscall is called");
