@@ -1,0 +1,16 @@
+Source: liblol-dkms
+Section: kernel
+Priority: extra
+Maintainer: Miao Wang <shankerwangmiao@gmail.com>
+Build-Depends: debhelper-compat (= 13),
+               dkms, dh-dkms,
+Standards-Version: 4.6.2
+Homepage: https://github.com/AOSC-Dev/la_ow_syscall
+
+Package: liblol-dkms
+Architecture: loong64
+Depends: ${misc:Depends}, dkms
+Conflicts: glibc
+Description: Compatibility layer kmod for old world applications
+  This package contains a compatibility layer for old world
+  applications on new world loongarch64 platform.

@@ -1,0 +1,31 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpkg/pkg-info.mk
+
+%:
+	dh $@ --with dkms
+
+override_dh_auto_build:
+	make dkms.conf VERSION="#MODULE_VERSION#"
+
+override_dh_auto_clean:
+	rm -rf dkms.conf
+
+TMPDIR ?= debian/tmp
+
+override_dh_auto_install:
+	install -Dvm644 \
+		Kbuild \
+		Makefile \
+		fsstat.c \
+		fsstat.h \
+		la_ow_syscall_main.c \
+		signal.c \
+		signal.h \
+		-t $(TMPDIR)/usr/src/la_ow_syscall-$(DEB_VERSION_UPSTREAM)
+	install -Dvm644 \
+		debian/kmod-autoload.conf \
+		$(TMPDIR)/usr/lib/modules-load.d/liblol.conf
+
+override_dh_dkms:
+	dh_dkms -V $(DEB_VERSION_UPSTREAM)
