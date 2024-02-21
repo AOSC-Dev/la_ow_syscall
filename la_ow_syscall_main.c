@@ -68,19 +68,22 @@ static struct {
 #define nr_syscalls_to_replace \
 	(sizeof(syscall_to_replace) / sizeof(syscall_to_replace[0]))
 
-static unsigned long kallsyms_lookup_name_addr =
-#ifdef HAVE_KSYM_ADDR
-LAOWSYS_KALLSYMS_LOOKUP_NAME_ADDR
-#else
-0
-#endif
-;
+static unsigned long kallsyms_lookup_name_addr = 0;
 static unsigned int allow_mod_unreg = 0;
 
 #include <asm-generic/sections.h>
 
 #ifdef HAVE_KSYM_ADDR
-static int __init find_kallsyms_lookup_name(void){ return 0; }
+static int __init find_kallsyms_lookup_name(void)
+{
+	unsigned long offset =
+		(unsigned long)&system_state - LAOWSYS_SYSTEM_STATE_ADDR;
+	pr_debug("kernel offset = %lx\n", offset);
+	kallsyms_lookup_name_addr = offset + LAOWSYS_KALLSYMS_LOOKUP_NAME_ADDR;
+	pr_debug("using kallsyms_lookup_name @ %p\n",
+		 (void *)kallsyms_lookup_name_addr);
+	return 0;
+}
 #else
 // Taken from https://github.com/zizzu0/LinuxKernelModules/blob/main/FindKallsymsLookupName.c
 #define KPROBE_PRE_HANDLER(fname) \
@@ -204,12 +207,19 @@ static struct {
 };
 #define nr_rel_tab (sizeof(relocation_table) / sizeof(relocation_table[0]))
 
-#ifdef HAVE_KSYM_ADDR
-static void **p_sys_call_table = (void **)LAOWSYS_SYS_CALL_TABLE_ADDR;
-static int __init find_sys_call_table(void){ return 0; };
-#else
-
 static void **p_sys_call_table;
+
+#ifdef HAVE_KSYM_ADDR
+static int __init find_sys_call_table(void)
+{
+	unsigned long offset =
+		(unsigned long)&system_state - LAOWSYS_SYSTEM_STATE_ADDR;
+	pr_debug("kernel offset = %lx\n", offset);
+	p_sys_call_table = (void **)(offset + LAOWSYS_SYS_CALL_TABLE_ADDR);
+	pr_debug("using sys_call_table @ %p\n", p_sys_call_table);
+	return 0;
+}
+#else
 
 #include <linux/jiffies.h>
 #include <linux/reboot.h>
