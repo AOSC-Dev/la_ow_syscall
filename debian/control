@@ -10,7 +10,7 @@ Homepage: https://github.com/AOSC-Dev/la_ow_syscall
 Package: liblol-dkms
 Architecture: loong64
 Depends: ${misc:Depends}, dkms
-Conflicts: glibc
+Conflicts: glibc, app-compat-dkms
 Description: Compatibility layer kmod for old world applications
   This package contains a compatibility layer for old world
   applications on new world loongarch64 platform.
